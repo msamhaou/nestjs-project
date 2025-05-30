@@ -8,6 +8,13 @@ import { TodoService } from './todo.service';
 export class TodoController {
 
     constructor(private todoService: TodoService){}
+
+    @Post('todo')
+    createTodoList(@Req() req, @Body() body: {title: string}){
+        const userId = req.user.userId;
+        return this.todoService.createTodoList(userId, title);
+    }
+
     @Post('task')
     create_task(@Req() req, @Body() dto: CreateTaskDto){
         const userId = req.user.userId;

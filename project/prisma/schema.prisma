@@ -15,6 +15,7 @@ model User {
   todoLists TodoList[]
   createdAt DateTime   @default(now())
   updatedAt DateTime   @updatedAt
+  Task      Task[]
 }
 
 model TodoList {
@@ -28,12 +29,14 @@ model TodoList {
 }
 
 model Task {
-  id          String   @id @default(uuid())
+  id          String    @id @default(uuid())
   description String
-  isCompleted Boolean  @default(false)
-  todoList    TodoList @relation(fields: [todoListId], references: [id])
+  isCompleted Boolean   @default(false)
+  todoList    TodoList  @relation(fields: [todoListId], references: [id])
   todoListId  String
+  user        User      @relation(fields: [userId], references: [id])
+  userId      String
   dueDate     DateTime?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
 }

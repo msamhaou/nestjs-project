@@ -10,8 +10,33 @@ export class TodoService {
         return this.prisma.todoList.create({data: {userId, title}})
     }
 
-    async createTask(userId:string, todoListId: string, dto: CreateTaskDto){
-        return this.prisma.task.create({data: {todoListId, description:dto.description}})
+    async createTask(userId: string, dto: CreateTaskDto) {
+        const task = await this.prisma.task.findUnique({
+            where: { id: dto.todoListId },
+        });
+
+        if (!task || task.userId !== userId) {
+            throw new ForbiddenException('You are not allowed to access these tasks');
+        }
+
+        return this.prisma.task.create({
+            data: {
+            ...dto,
+            userId
+            },
+        });
+    }       
+
+    async deleteTask(userId:string, taskId:string){
+        const task = await this.prisma.task.findUnique({
+            where: { id: taskId,},
+        });
+        
+        if (!task || task.userId !== userId) {
+            throw new ForbiddenException('You are not allowed to access these tasks');
+        }
+
+        return this.prisma.task.delete({where: {id:taskId} })
     }
 
     async getAllTasks(userId: string, todoListId:string) {
@@ -30,4 +55,5 @@ export class TodoService {
             orderBy: { createdAt: 'desc' }, // optional
         });
     }
+
 }
