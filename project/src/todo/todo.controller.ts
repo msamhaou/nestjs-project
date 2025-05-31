@@ -1,5 +1,5 @@
 import { Controller, Get, UseGuards, Req, Delete, Post, Body, Patch, Query, Param } from '@nestjs/common';
-import { JwtGuard } from 'src/auth/jwt.guard';
+import { JwtGuard } from '../auth/jwt.guard';
 import { CreateTaskDto } from './dto/create-todo.dto';
 import { TodoService } from './todo.service';
 import { UpdateTaskDto } from './dto/update-todo.dto';
