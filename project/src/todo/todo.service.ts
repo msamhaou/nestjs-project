@@ -24,9 +24,11 @@ export class TodoService {
         const todo = await this.prisma.todoList.findUnique({
             where: { id: todoListId },
         });
-    
-        if (!todo || todo.userId !== userId) {
-            throw new ForbiddenException('You are not allowed to access these tasks');
+        
+        if (!todo)
+            throw new ForbiddenException(`todo list ID: ${todoListId} does not exist`);
+        if (todo.userId !== userId) {
+            throw new ForbiddenException('You are not allowed to access this todo list');
         }
 
         return this.prisma.task.create({
@@ -45,7 +47,7 @@ export class TodoService {
 
     async deleteTask(userId:string, taskId:string){
         if (!taskId) {
-            throw new BadRequestException('Missing todoListId');
+            throw new BadRequestException('Missing taskId');
           }
         const task = await this.prisma.task.findUnique({
             where: { id: taskId,},

@@ -3,6 +3,10 @@ import { TodoController } from './todo.controller';
 import { TodoService } from './todo.service';
 import { CreateTaskDto } from './dto/create-todo.dto';
 import { UpdateTaskDto } from './dto/update-todo.dto';
+import { Prisma } from '@prisma/client';
+import { PrismaService } from '../../prisma/prisma.service';
+import { BadRequestException, ForbiddenException } from '@nestjs/common';
+import { title } from 'process';
 
 const mockRequest = {
   user: { userId: 'user-123' },
@@ -21,6 +25,24 @@ describe('TodoController', () => {
     deleteTask: jest.fn(),
     updateTask: jest.fn(),
   };
+
+  const mockPrisma = {
+  todoList: {
+    $transaction: jest.fn(),
+    create: jest.fn(),
+    findMany: jest.fn(),
+    findUnique: jest.fn(),
+    count: jest.fn(),
+  },
+  task: {
+    create: jest.fn(),
+    findUnique: jest.fn(),
+    delete: jest.fn(),
+    findMany: jest.fn(),
+    update: jest.fn(),
+  },
+  $transaction: jest.fn(),
+};
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -86,4 +108,173 @@ describe('TodoController', () => {
     expect(service.updateTask).toHaveBeenCalledWith('user-123', dto);
     expect(result).toEqual({ id: 'task-1', description: 'Updated' });
   });
+
+  describe('TodoService', () => {
+    let service: TodoService;
+    const userId = "user-1"
+    beforeEach(async ()=> {
+      const module: TestingModule = await Test.createTestingModule({
+        providers:[
+          TodoService,
+          {
+            provide: PrismaService,
+            useValue: mockPrisma
+          }
+        ]
+      }).compile();
+      service = module.get<TodoService>(TodoService);
+    });
+
+    afterEach(() => jest.clearAllMocks() )
+
+    describe('createTodoList', () => {
+      it('throws if title is missing', async() => {
+        await expect(service.createTodoList(userId, ''))
+          .rejects.toThrow(BadRequestException);
+      });
+
+      it('creates a todo list', async() => {
+        mockPrisma.todoList.create.mockResolvedValue({id:'task1', title: 'test'})
+        const result = await service.createTodoList(userId, 'test')
+        expect(result).toEqual({id:'task1', title: 'test'})
+      })
+
+    });
+
+    describe('createTask', () => {
+      const dto: CreateTaskDto = { description: 'task description '};
+
+      it('throws if todoListId is missing', async ()=> {
+        await expect(service.createTask(userId, '', dto)).rejects.toThrow(BadRequestException);
+      });
+
+      it('throws if description is missing', async () => {
+        await expect(service.createTask(userId, 'todo-1', {description:''})).rejects.toThrow(BadRequestException);
+      });
+
+      it('creates task if valid', async () => {
+        mockPrisma.todoList.findUnique.mockResolvedValue({ id:'todo1', userId: userId });
+        mockPrisma.task.create.mockResolvedValue({ id: 'task1', ...dto,todoListId: 'todo1' })
+        const result = await service.createTask(userId, 'todo1', dto);
+        expect(result).toEqual({id: 'task1',...dto, todoListId: 'todo1'})
+      });
+
+      it('throws if user not owning task', async () => {
+        const realOwnerId = 'user-2';
+        const userId = 'user-1';
+        const todoListId = 'todo2';
+
+        mockPrisma.todoList.findUnique.mockResolvedValue({ id: todoListId, userId: realOwnerId });
+
+        await expect(service.createTask(userId, todoListId, dto))
+          .rejects.toThrow(new ForbiddenException('You are not allowed to access this todo list'));
+      })
+
+      it('throws if todo list Id doesnt exist', async () => {
+        const userId = 'user-1';
+        const todoListId = 'todo2';
+        const dto = { description: 'task' };
+
+        mockPrisma.todoList.findUnique.mockResolvedValue(null);
+
+        await expect(service.createTask(userId, todoListId, dto))
+          .rejects.toThrow(new ForbiddenException(`todo list ID: ${todoListId} does not exist`));
+      })
+
+    })
+
+    describe('deleteTask', () => {
+      const userId = 'user-1';
+      const taskId = 'task-123';
+
+      it('should throw BadRequestException if taskId is missing', async () => {
+        await expect(service.deleteTask(userId, ''))
+          .rejects
+          .toThrow(new BadRequestException('Missing taskId'));
+      });
+
+      it('should throw ForbiddenException if task not found', async () => {
+        mockPrisma.task.findUnique.mockResolvedValue(null);
+
+        await expect(service.deleteTask(userId, taskId))
+          .rejects
+          .toThrow(new ForbiddenException('You are not allowed to access these tasks'));
+      });
+
+      it('should throw ForbiddenException if task belongs to different user', async () => {
+        mockPrisma.task.findUnique.mockResolvedValue({ id: taskId, userId: 'user-2' });
+
+        await expect(service.deleteTask(userId, taskId))
+          .rejects
+          .toThrow(new ForbiddenException('You are not allowed to access these tasks'));
+      });
+
+      it('should delete task if user owns the task', async () => {
+        const task = { id: taskId, userId };
+
+        mockPrisma.task.findUnique.mockResolvedValue(task);
+        mockPrisma.task.delete.mockResolvedValue({ ...task, deleted: true });
+
+        const result = await service.deleteTask(userId, taskId);
+        expect(mockPrisma.task.findUnique).toHaveBeenCalledWith({ where: { id: taskId } });
+        expect(mockPrisma.task.delete).toHaveBeenCalledWith({ where: { id: taskId } });
+        expect(result).toEqual({ ...task, deleted: true });
+      });
+    });
+
+    describe('getTasksPage', () => {
+        const userId = 'user-1';
+        const todoListId = 'todo-123';
+        const page = 2;
+        const limit = 5;
+
+        it('should return paginated tasks with meta info', async () => {
+          const mockTasks = [
+            { id: 'task1', userId, todoListId, description: 'task 1' },
+            { id: 'task2', userId, todoListId, description: 'task 2' },
+          ];
+          const mockTotal = 12;
+
+          mockPrisma.$transaction.mockResolvedValue([mockTasks, mockTotal]);
+
+          const result = await service.getTasksPage(userId, page, limit, todoListId);
+
+          expect(mockPrisma.$transaction).toHaveBeenCalledWith([
+            expect.objectContaining({
+              where: { userId, todoListId },
+              skip: (page - 1) * limit,
+              take: limit,
+              orderBy: { createdAt: 'desc' },
+            }),
+            expect.objectContaining({
+              where: { userId },
+            }),
+          ]);
+
+          expect(result).toEqual({
+            data: mockTasks,
+            meta: {
+              total: mockTotal,
+              page,
+              lastPage: Math.ceil(mockTotal / limit),
+            },
+          });
+        });
+
+        it('should handle zero tasks gracefully', async () => {
+          mockPrisma.$transaction.mockResolvedValue([[], 0]);
+
+          const result = await service.getTasksPage(userId, 1, 10, todoListId);
+
+          expect(result).toEqual({
+            data: [],
+            meta: {
+              total: 0,
+              page: 1,
+              lastPage: 0,
+            },
+          });
+        });
+      });
+  })
 });
