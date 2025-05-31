@@ -1,4 +1,6 @@
 export class UpdateTaskDto {
-  content: string;
-  done?: boolean;
+  taskId: string;
+  description?: string;
+  isCompleted?: boolean;
+  dueDate?: Date;
 }
