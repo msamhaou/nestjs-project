@@ -15,12 +15,12 @@ export class TodoService {
     }
 
     async createTask(userId: string, todoListId:string, dto: CreateTaskDto) {
+        console.log("dt ", dto)
         if (!todoListId) {
             throw new BadRequestException('Create Task : Missing todoListId');
         }if (!dto.description){
             throw new BadRequestException('Create Task : Missing description');
         }
-        console.log(todoListId)
         const todo = await this.prisma.todoList.findUnique({
             where: { id: todoListId },
         });
