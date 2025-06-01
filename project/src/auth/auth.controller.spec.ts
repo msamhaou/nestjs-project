@@ -3,6 +3,8 @@ import { AuthService } from './auth.service';
 import { RegisterDto } from './dto/register.dto';
 import { Response } from 'express';
 import { AuthController } from './auth.controller';
+import { RedisService } from './redis.service';
+import { JwtService } from '@nestjs/jwt';
 
 
 describe('AuthController', () => {
@@ -14,6 +16,13 @@ describe('AuthController', () => {
     login: jest.fn(),
     register: jest.fn(),
   };
+
+  const mockRedis = {
+    set: jest.fn(),
+    get: jest.fn(),
+    del: jest.fn()
+  }
+
 
   const mockResponse = (): Partial<Response> => {
     const res: Partial<Response> = {};
@@ -28,7 +37,12 @@ describe('AuthController', () => {
         {
           provide: AuthService,
           useValue: mockAuthService,
+          
         },
+        {
+          provide: RedisService,
+          useValue : mockRedis
+        }
       ],
     }).compile();
 
@@ -43,19 +57,19 @@ describe('AuthController', () => {
   describe('login', () => {
     it('should validate user, generate token and set cookie', async () => {
       const mockUser = { id: 'user-1', email: 'test@mail.com' };
-      const mockTokens = { access_token: 'jwt-token' };
+      const mockTokens = { access_token: 'jwt-token' , refresh_token: 'refresh-token'};
 
       mockAuthService.validateUser.mockResolvedValue(mockUser);
       mockAuthService.login.mockResolvedValue(mockTokens);
 
       const res = mockResponse() as Response;
 
+      const body = { email: 'test@mail.com', password: '123456789111' }
       const result = await controller.login(
-        { email: 'test@mail.com', password: '123456' },
+        body,
         res,
       );
-
-      expect(authService.validateUser).toHaveBeenCalledWith('test@mail.com', '123456');
+      expect(authService.validateUser).toHaveBeenCalledWith(body.email, body.password);
       expect(authService.login).toHaveBeenCalledWith(mockUser);
       expect(res.cookie).toHaveBeenCalledWith(
         'access_token',
@@ -66,7 +80,7 @@ describe('AuthController', () => {
           maxAge: 15 * 60 * 1000,
         }),
       );
-      expect(result).toEqual({ message: 'Logged in' });
+      expect(result).toEqual({ message: 'Logged in' , jwt: 'refresh-token', user_id:mockUser.id});
     });
   });
 

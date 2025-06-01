@@ -22,7 +22,7 @@ export class AuthController {
       maxAge: 15 * 60 * 1000,
     });
 
-    return { message: 'Logged in', jwt: tokens.refresh_token, user_id:user.user_id };
+    return { message: 'Logged in', jwt: tokens.refresh_token, user_id:user.id };
   }
 
   @Post('register')

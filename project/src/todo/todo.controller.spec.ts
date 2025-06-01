@@ -276,5 +276,32 @@ describe('TodoController', () => {
           });
         });
       });
+    describe('getAllTasks', () => {
+      const todoListId = 'todo1';
+      const mockTasks = [
+            { id: 'task1', userId, todoListId, description: 'task 1' },
+            { id: 'task2', userId, todoListId, description: 'task 2' },
+          ];
+
+      it('should return all tasks in todo list', async () => {
+        mockPrisma.task.findMany.mockResolvedValue(mockTasks)
+        await expect(service.getAllTasks(userId, todoListId))
+          .toEqual(mockTasks)
+      })
+
+      it('should throw BadRequestException if taskId is missing', async () => {
+        await expect(service.getAllTasks(userId, ''))
+          .rejects
+          .toThrow(new BadRequestException('Missing todoListId'));
+      });
+
+      it('should throw ForbiddenException if todo list belongs to different user', async () => {
+        mockPrisma.task.findUnique.mockResolvedValue({ id: 'todo2', userId: 'user-2' });
+
+        await expect(service.getAllTasks(userId, 'todo2'))
+          .rejects
+          .toThrow(new ForbiddenException('You are not allowed to access these tasks'));
+      });
+    })
   })
 });
