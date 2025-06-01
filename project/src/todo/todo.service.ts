@@ -1,7 +1,7 @@
 import { BadRequestException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
-import { CreateTaskDto } from './dto/create-todo.dto';
-import { UpdateTaskDto } from './dto/update-todo.dto';
+import { CreateTaskDto } from './dto/create-task.dto';
+import { UpdateTaskDto } from './dto/update-task.dto';
 
 @Injectable()
 export class TodoService {
@@ -9,7 +9,7 @@ export class TodoService {
 
     async createTodoList(userId: string, title:string){
         if (!title) {
-            throw new BadRequestException('Missing todoListId');
+            throw new BadRequestException('Missing todo list title');
         }
         return this.prisma.todoList.create({data: { userId, title }})
     }

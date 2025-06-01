@@ -1,8 +1,8 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { TodoController } from './todo.controller';
 import { TodoService } from './todo.service';
-import { CreateTaskDto } from './dto/create-todo.dto';
-import { UpdateTaskDto } from './dto/update-todo.dto';
+import { CreateTaskDto } from './dto/create-task.dto';
+import { UpdateTaskDto } from './dto/update-task.dto';
 import { Prisma } from '@prisma/client';
 import { PrismaService } from '../../prisma/prisma.service';
 import { BadRequestException, ForbiddenException } from '@nestjs/common';

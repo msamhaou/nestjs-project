@@ -7,7 +7,7 @@ export class RedisService implements OnModuleInit, OnModuleDestroy {
 
   onModuleInit() {
     this.client = new Redis({
-      host: 'localhost',
+      host: 'redis',
       port: 6379,
       //could be passwd
     });
