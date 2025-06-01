@@ -6,6 +6,7 @@ import { ConflictException } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import { RedisService } from './redis.service';
 import { use } from 'passport';
+import * as crypto from 'crypto';
 
 @Injectable()
 export class AuthService {
@@ -34,43 +35,51 @@ export class AuthService {
 
   async register(dto: { email: string; password: string;  }) {
 
-  const existingUser = await this.usersService.findByEmail(dto.email);
-  if (existingUser) {
-    throw new ConflictException('Email already registered');
-  }
-
-
-  const hashedPassword = await bcrypt.hash(dto.password, 10);
-
-
-  const newUser = await this.usersService.createUser({
-    ...dto,
-    password: hashedPassword,
-  });
-
-
-  const { password, ...result } = newUser;
-  return result;
-}
-
-async refreshTokens(userId: number, refreshToken: string) {
-    const storedRefreshToken = await this.redisService.get(`refresh_token:${userId}`);
-
-    if (!storedRefreshToken || storedRefreshToken !== refreshToken) {
-      throw new ForbiddenException('Invalid refresh token');
+    const existingUser = await this.usersService.findByEmail(dto.email);
+    if (existingUser) {
+      throw new ConflictException('Email already registered');
     }
 
-    const user = await this.usersService.findById(userId);
-    if (!user) throw new ForbiddenException('User not found');
 
-    const payload = { email: user.email, sub: user.id };
-    const access_token = this.jwtService.sign(payload, { expiresIn: '15m' });
-    const new_refresh_token = this.jwtService.sign(payload, { expiresIn: '7d' });
+    const hashedPassword = await bcrypt.hash(dto.password, 10);
 
 
-    await this.redisService.set(`refresh_token:${user.id}`, new_refresh_token, 7 * 24 * 60 * 60);
+    const newUser = await this.usersService.createUser({
+      ...dto,
+      password: hashedPassword,
+    });
 
-    return { access_token, refresh_token: new_refresh_token };
+
+    const { password, ...result } = newUser;
+    return result;
+  }
+
+  async generateRefreshToken(userId: string): Promise<string> {
+    const refreshToken = this.createRandomToken();
+
+    await this.redisService.set(`refresh_token:${userId}`, refreshToken, 604800);
+
+    return refreshToken;
+  }
+
+  async validateRefreshToken(userId: string, token: string): Promise<boolean> {
+    const storedToken = await this.redisService.get(`refresh_token:${userId}`);
+    return storedToken === token;
+  }
+
+  async refreshToken(userId: string, refreshToken: string) {
+    const isValid = await this.validateRefreshToken(userId, refreshToken);
+    if (!isValid) throw new UnauthorizedException('Invalid refresh token');
+
+    const accessToken = this.jwtService.sign({ sub: userId });
+
+    const newRefreshToken = await this.generateRefreshToken(userId);
+
+    return { accessToken, refreshToken: newRefreshToken };
+  }
+
+  private createRandomToken() {
+    return crypto.randomBytes(64).toString('hex');
   }
 
   async logout(userId: number) {

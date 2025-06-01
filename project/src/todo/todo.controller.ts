@@ -22,10 +22,16 @@ export class TodoController {
         return this.todoService.getTodoLists(userId);
     }
 
-    @Post(':id/tasks')
-    create_task(@Req() req, @Param('id') id: string, @Body() dto: CreateTaskDto){
+    @Delete(':id')
+    deleteTodoList(@Req() req, @Param('id') todoListId:string){
         const userId = req.user.userId;
-        return this.todoService.createTask(userId, id, dto);
+        return this.todoService.deleteTodoList(userId, todoListId);
+    }
+
+    @Post(':id/tasks')
+    create_task(@Req() req, @Param('id') taskId: string, @Body() dto: CreateTaskDto){
+        const userId = req.user.userId;
+        return this.todoService.createTask(userId, taskId, dto);
     }
 
 

@@ -60,6 +60,21 @@ export class TodoService {
         return this.prisma.task.delete({where: {id:taskId} })
     }
 
+     async deleteTodoList(userId:string, todoListId:string){
+        if (!todoListId) {
+            throw new BadRequestException('Missing todoListId');
+          }
+        const task = await this.prisma.task.findUnique({
+            where: { id: todoListId,},
+        });
+        
+        if (!task || task.userId !== userId) {
+            throw new ForbiddenException('You are not allowed to access these tasks');
+        }
+
+        return this.prisma.task.delete({where: {id:todoListId} })
+    }
+
     async getTasksPage(userId:string, page:number, limit: number, todoListId:string){
         const skip = (page - 1) * limit;
 
