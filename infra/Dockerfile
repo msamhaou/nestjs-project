@@ -4,7 +4,7 @@ RUN apt-get update && apt-get install -y netcat-openbsd && rm -rf /var/lib/apt/l
 # Set the working directory inside the container
 WORKDIR /usr/src/app
 
-COPY package*.json ./
+COPY ../project/package*.json ./
 
 # Install all dependencies (including devDependencies)
 RUN npm install
@@ -12,7 +12,7 @@ RUN npm install
 
 
 # Copy the rest of the application files
-COPY . .
+COPY ../project .
 
 EXPOSE 3000
 

@@ -1,12 +1,50 @@
-# TodoController API Documentation
+# Task Management API
+* [Requirement](#requirement)
+* [Documentaion](#documentaion)
+* [File_structure](#File_structure)
+* [run the application](#Run)
+    
 
-_Base route: /todo
+# Requirements:
 
-_All routes are protected with JWT authentication guard.
+  ![Docker](https://img.shields.io/badge/Docker-required-blue?logo=docker)
+  - Docker containerization platform
+
+  ![Make](https://img.shields.io/badge/Make-required-blue?logo=gnu)
+  - Make build automation tool
+
+  ![Linux](https://img.shields.io/badge/Linux-recommended-green?logo=linux)
+  - (Recommended) Linux environment
 
 ---
 
-## 1. Create a Todo List
+# File_structure:
+```
+task_managment_api/
+    ├── projet
+        ├──src
+        |    ├──auth
+        |    ├──todo
+        |    ├──users
+        ├── prisma
+             ├──prisma.schema
+    └──infra
+        ├──docker-compose.yaml
+        └──Dockerfile
+    ├──Makefile
+    └── README.md
+```
+# Run:
+  ```
+    make
+  ```
+  to run test , make sure nest application is running :
+  ```
+    make test
+  ```
+# Documentaion:
+
+###  Create a Todo List
 - **Method:** `POST`
 
 - **Route:** `/todo`
@@ -23,7 +61,7 @@ _All routes are protected with JWT authentication guard.
 
 - **Response:** `The created todo list object.`
 
-## 2. Get All Todo Lists
+###  Get All Todo Lists
 - **Method:** `GET`
 
 - **Route:** `/todo`
@@ -33,7 +71,7 @@ _All routes are protected with JWT authentication guard.
 
 **Response:** `Array of todo list objects.`
 
-## 3. Get Tasks for a Todo List (with optional pagination)
+###  Get Tasks for a Todo List (with optional pagination)
 - **Method:** `GET`
 
 - **Route:** `/todo/:id/tasks`
@@ -51,7 +89,7 @@ _All routes are protected with JWT authentication guard.
 - **URL example:** `GET /todo/123e4567-e89b-12d3-a456-426614174000/tasks?page=2&limit=10`
 
 
-## 4. Create a Task in a Todo List
+###  Create a Task in a Todo List
 **Method:** `POST`
 
 **Route:** `/todo/:id/tasks`
@@ -74,7 +112,7 @@ _All routes are protected with JWT authentication guard.
 
 **Response:** `The created task object.`
 
-## 5. Get Tasks for a Todo List (with optional pagination)
+###  Get Tasks for a Todo List (with optional pagination)
 **Method:** `GET`
 
 **Route:** `/todo/:id/tasks`
@@ -110,7 +148,7 @@ If paginated, returns:
 
 If no pagination params, returns an array of all tasks.
 
-## 6. Delete a Task
+###  Delete a Task
 **Method:** `DELETE`
 
 **Route:** `/todo/:id/task`
@@ -132,7 +170,7 @@ If no pagination params, returns an array of all tasks.
 
 **Response:** `Result of the delete operation.`
 
-## 7. Update a Task
+###  Update a Task
 **Method:** `PATCH`
 
 **Route:** `/todo/:id/task`
