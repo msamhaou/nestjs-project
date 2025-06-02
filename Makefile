@@ -15,3 +15,6 @@ clean:
 
 logs:
 	docker-compose logs -f
+
+test:
+	docker exec -it nest npm test
