@@ -18,7 +18,7 @@ services:
     container_name: nest
     build: ./project/
     env_file:
-      - .env
+      - ./project/.env
     volumes:
       - ./project:/usr/src/app
       - /usr/src/app/node_modules
