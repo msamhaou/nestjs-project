@@ -33,7 +33,25 @@ _All routes are protected with JWT authentication guard.
 
 **Response:** `Array of todo list objects.`
 
-## 3. Create a Task in a Todo List
+## 3. Get Tasks for a Todo List (with optional pagination)
+- **Method:** `GET`
+
+- **Route:** `/todo/:id/tasks`
+
+- **Params:**
+
+- **id (string):** `The UUID of the todo list.`
+
+- **Query Params (optional):**
+
+  - page (number): `Page number for pagination.`
+
+  - limit (number): `Number of tasks per page.`
+
+- **URL example:** `GET /todo/123e4567-e89b-12d3-a456-426614174000/tasks?page=2&limit=10`
+
+
+## 4. Create a Task in a Todo List
 **Method:** `POST`
 
 **Route:** `/todo/:id/tasks`
@@ -56,7 +74,7 @@ _All routes are protected with JWT authentication guard.
 
 **Response:** `The created task object.`
 
-## 4. Get Tasks for a Todo List (with optional pagination)
+## 5. Get Tasks for a Todo List (with optional pagination)
 **Method:** `GET`
 
 **Route:** `/todo/:id/tasks`
@@ -92,7 +110,7 @@ If paginated, returns:
 
 If no pagination params, returns an array of all tasks.
 
-## 5. Delete a Task
+## 6. Delete a Task
 **Method:** `DELETE`
 
 **Route:** `/todo/:id/task`
@@ -114,7 +132,7 @@ If no pagination params, returns an array of all tasks.
 
 **Response:** `Result of the delete operation.`
 
-## 6. Update a Task
+## 7. Update a Task
 **Method:** `PATCH`
 
 **Route:** `/todo/:id/task`
