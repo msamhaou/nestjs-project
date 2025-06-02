@@ -19,9 +19,9 @@ _All routes are protected with JWT authentication guard.
     }
 
 **Description:**
-Creates a new todo list for the authenticated user.
+`Creates a new todo list for the authenticated user.`
 
-Response: The created todo list object.
+- **Response:** `The created todo list object.`
 
 ## 2. Get All Todo Lists
 - **Method:** `GET`
@@ -31,104 +31,110 @@ Response: The created todo list object.
 - **Description:**
 `Retrieves all todo lists belonging to the authenticated user.`
 
-Response: Array of todo list objects.
+**Response:** `Array of todo list objects.`
 
-3. Create a Task in a Todo List
-Method: POST
+## 3. Create a Task in a Todo List
+**Method:** `POST`
 
-Route: /todo/:id/tasks
+**Route:** `/todo/:id/tasks`
 
-Params:
+**Params:**
 
-id (string): The UUID of the todo list.
+**id (string):** `The UUID of the todo list.`
 
-Body:
-CreateTaskDto object (task details).
+**Body:**
+```json
+  {
+    "description" : "example",
+    "isCompleted" : false, //optional
+    "dueDate": "2025-06-01T00:00:00.000Z" //optional
+  }
+  ```
 
-Description:
-Adds a new task to the todo list identified by id.
+**Description:**
+`Adds a new task to the todo list identified by id.`
 
-Response: The created task object.
+**Response:** `The created task object.`
 
-4. Get Tasks for a Todo List (with optional pagination)
-Method: GET
+## 4. Get Tasks for a Todo List (with optional pagination)
+**Method:** `GET`
 
-Route: /todo/:id/tasks
+**Route:** `/todo/:id/tasks`
 
-Params:
+**Params:**
 
-id (string): The UUID of the todo list.
+**id (string):** `The UUID of the todo list.`
 
-Query Params (optional):
+**Query Params (optional):**
 
-page (number): Page number for pagination.
+**page (number):** `Page number for pagination.`
 
-limit (number): Number of tasks per page.
+**limit (number):** `Number of tasks per page.`
 
-Description:
-Retrieves tasks belonging to the todo list. If page and limit are provided, returns paginated tasks; otherwise returns all tasks.
+**Description:**
+`Retrieves tasks belonging to the todo list. If page and limit are provided, returns paginated tasks; otherwise returns all tasks.`
 
-Response:
+**Response:**
 
 If paginated, returns:
 
-json
-Copy
-Edit
-{
-  "data": [/* array of task objects */],
-  "meta": {
-    "total": number,
-    "page": number,
-    "lastPage": number
+
+  ```json
+  {
+    "data": [/* array of task objects */],
+    "meta": {
+      "total": number,
+      "page": number,
+      "lastPage": number
+    }
   }
-}
+  ```
+
 If no pagination params, returns an array of all tasks.
 
-5. Delete a Task
-Method: DELETE
+## 5. Delete a Task
+**Method:** `DELETE`
 
-Route: /todo/:id/task
+**Route:** `/todo/:id/task`
 
-Params:
+**Params:**
 
-id (string): The UUID of the todo list (used for routing but not required in body).
+**id (string):** `The UUID of the todo list (used for routing but not required in body).`
 
-Body:
+**Body:**
 
-json
-Copy
-Edit
-{
-  "taskId": "string"
-}
-Description:
-Deletes a task identified by taskId belonging to the authenticated user.
+  ```json
+  {
+    "taskId": "string"
+  }
+  ```
 
-Response: Result of the delete operation.
+**Description:**
+`Deletes a task identified by taskId belonging to the authenticated user.`
 
-6. Update a Task
-Method: PATCH
+**Response:** `Result of the delete operation.`
 
-Route: /todo/:id/task
+## 6. Update a Task
+**Method:** `PATCH`
 
-Params:
+**Route:** `/todo/:id/task`
 
-id (string): The UUID of the todo list.
+**Params:**
 
-Body:
-UpdateTaskDto object containing the fields to update, e.g.:
+**id (string):** `The UUID of the todo list.`
 
-json
-Copy
-Edit
-{
-  "taskId": "string",
-  "description": "string",
-  "isCompleted": true,
-  "dueDate": "2025-06-01T00:00:00.000Z"
-}
-Description:
-Updates the specified task with the given fields.
+**Body:**
+`UpdateTaskDto object containing the fields to update, e.g.:`
 
-Response: The updated task object.
+  ```json
+  {
+    "taskId": "string",
+    "description": "string",
+    "isCompleted": true,
+    "dueDate": "2025-06-01T00:00:00.000Z"
+  }
+  ```
+**Description:**
+`Updates the specified task with the given fields.`
+
+**Response:** `The updated task object.`

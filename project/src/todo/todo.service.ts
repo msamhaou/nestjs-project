@@ -15,7 +15,6 @@ export class TodoService {
     }
 
     async createTask(userId: string, todoListId:string, dto: CreateTaskDto) {
-        console.log("dt ", dto)
         if (!todoListId) {
             throw new BadRequestException('Create Task : Missing todoListId');
         }if (!dto.description){
